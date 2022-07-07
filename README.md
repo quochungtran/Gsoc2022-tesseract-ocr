@@ -6,7 +6,7 @@ This script Python is supported for my progress of my project at Google Summer o
 
 Text localization and detection by Tesserqct for each case found in folder `./results-ocr`
 
-Explore my journey at [here](https://quochungtran.github.io/)
+Explore my journey  [here](https://quochungtran.github.io/)
 
 
 
