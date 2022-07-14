@@ -1,3 +1,5 @@
+from ast import withitem
+from copy import copy
 import cv2 
 import pytesseract
 import numpy as np
@@ -6,6 +8,8 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import figure
 import csv
 import os
+import re
+from utils import *
 
 
 class PreProcessing_engine:
@@ -63,18 +67,35 @@ class PreProcessing_engine:
     
     #skew correction
     def deskew(self):
-        coords = np.column_stack(np.where(self.image > 0))
-        angle = cv2.minAreaRect(coords)[-1]
-        if angle < -45:
-            angle = -(90 + angle)
-        else:
-            angle = -angle
-        (h, w) = self.image.shape[:2]
+        rotated = (self.image).copy()            
+        gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
+        gray = cv2.bitwise_not(gray)
+        # threshold the image, setting all foreground pixels to
+        # 255 and all background pixels to 0
+        thresh = cv2.threshold(gray, 0, 255,
+    	     cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+        coords = np.column_stack(np.where(thresh > 0))
+        angle = cv2.minAreaRect(coords)[-1] 
+        angle = -angle
+        (h, w) = rotated.shape[:2]
         center = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated = cv2.warpAffine(self.image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+        rotated = cv2.warpAffine(rotated, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)     
+
         return rotated
-    
+
+    def rotate_4_oritation(self):
+        
+        rotated = self.image.copy()
+        (h, w) = rotated.shape[:2]
+        center = (w // 2, h // 2)
+        M = cv2.getRotationMatrix2D(center, 90, 1.0)
+        rotated = cv2.warpAffine(rotated, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)     
+
+        return rotated
+        
+
+
     # remove shadow
     def remove_shadow(self):
         
